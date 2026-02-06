@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
 import { APIURL, callApi } from './lib';
-import weatherLogo from './assets/weather.svg';
 
 const App = () => {
   const [city, setCity] = useState("");
@@ -22,25 +21,30 @@ const App = () => {
     }
     setIsLoading(true);
     const URL = APIURL(city);
-    callApi("GET", URL, "", loadData);
+    if (!URL) {
+      setError("Missing API key. Check VITE_OPENWEATHER_KEY and restart the dev server.");
+      setIsLoading(false);
+      return;
+    }
+    callApi("GET", URL, null, loadData, handleError);
   }
 
   function loadData(res)
   {
-    if (!res || res.error || (res.cod && Number(res.cod) !== 200))
-    {
-      setError(res?.error || res?.message || "Unable to fetch weather data");
-      setIsLoading(false);
-      return;
-    }
     setData(res);
+    setIsLoading(false);
+  }
+
+  function handleError(err)
+  {
+    setError(err?.message || "Failed to fetch. Check your network or API key.");
     setIsLoading(false);
   }
 
   return (
     <div className='app'>
       <div className='header'>
-        <img src={weatherLogo} alt='Weather logo' />Weather App
+        <img src={IMGURL + "weather.svg"} alt='Weather logo' />Weather App
       </div>
       <div className='section'>
         <div className='inputdiv'>
@@ -67,7 +71,7 @@ const App = () => {
 
       {isLoading && 
         <div className='progress'>
-          <img src={IMGURL + "loading.gif"} alt='' />
+          <img src={IMGURL + "loading.svg"} alt='Loading' />
         </div>
       }
     </div>
